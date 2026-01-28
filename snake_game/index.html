@@ -4,8 +4,52 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Canvas</title>
         <script defer src="index.js"></script>
+        <style>
+            body{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            dialog{
+                text-align: center;
+                padding: 50px;
+
+                & .content{
+                    font-size: 24px;
+                    line-height: 1.5;
+                }
+
+                & button{
+                    padding: 0.5em 1.5em;
+                    border: 1px solid #000;
+                    background: transparent;
+                    font-size: 18px;
+                    line-height: 1.5;
+                    border-radius: 48px;
+                    transition: .3s;
+                    cursor: pointer;
+
+                    &:hover{
+                        background: #000;
+                        color: #fff;
+                    }
+                }
+            }
+        </style>
     </head>
     <body>
         <canvas id="canvas"></canvas>
+        <dialog closedby="closerequest" id="start-ui">
+            <div class="content">
+                <p>Press <kbd>←</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>→</kbd> arrow keys to move the snake.</p>
+            </div>
+            <button autofocus>Start Game</button>
+        </dialog>
+
+        <dialog closedby="closerequest" id="restart-ui">
+            <p>Game Over!</p>
+            <button autofocus>Restart Game</button>
+        </dialog>
     </body>
 </html>

@@ -1,141 +1,202 @@
-function myApp() {
-  canvas = document.getElementById("canvas");
+class SnakeGame {
+  constructor() {
+    this.canvas = document.getElementById( 'canvas' );
 
-  if (!canvas) return;
+    if ( ! this.canvas ) return;
 
-  const CANVAS_WIDTH = 500;
-  const CANVAS_HEIGHT = 500;
+    this.startGameDialog = document.getElementById( 'start-ui' );
+    this.restartGameDialog = document.getElementById( 'restart-ui' );
 
-  canvas.width = CANVAS_WIDTH;
-  canvas.height = CANVAS_HEIGHT;
-  canvas.style.border = '5px solid #000';
+    this.SNAKE_COLOR = '#9726CC';
+    this.SEGMENT_SIZE = 10;
 
-  const ctx = canvas.getContext("2d");
-  const cw = canvas.width;
-  const ch = canvas.height;
+    this.snakeSegments = [
+      { x: 40, y : 0 },
+      { x: 30, y : 0 },
+      { x: 20, y : 0 },
+      { x: 10, y : 0 },
+      { x: 0, y : 0 },
+    ];
 
-  const SNAKE_COLOR = 'yellow';
-  const SEGMENT_SIZE = 10;
-
-  const snake = [
-    { x: 40, y: 0 },
-    { x: 30, y: 0 },
-    { x: 20, y: 0 },
-    { x: 10, y: 0 },
-    { x: 0, y: 0 }
-  ]
-
-  let raf = null;
-  let direction = 'right';
-  let nextDirection = 'right';
-  let speed = 100;
-  let lastMoveTime = 0;
-
-
-  function drawSnake() {
-    ctx.clearRect(0, 0, cw, ch);
-
-    snake.forEach((segment) => {
-      ctx.fillStyle = SNAKE_COLOR;
-      ctx.fillRect(segment.x, segment.y, SEGMENT_SIZE, SEGMENT_SIZE);
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(segment.x, segment.y, SEGMENT_SIZE, SEGMENT_SIZE);
-    })
+    this.raf = null;
+    this.direction = 'right';
+    this.nextDirection = 'right';
+    this.speed = 100;
+    this.lastMoveTime = 0;
+  }
+  
+  init() {
+    this.drawCanvas();
+    this.canvasContext();
+    this.drawSnake();
+    this.startGameUi();  
+    this.controls();
   }
 
-  function moveSnake(timestamp) {
-    if (!lastMoveTime) lastMoveTime = timestamp;
+  drawCanvas() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
 
-    const elapsed = timestamp - lastMoveTime;
+    // Make the canvas square by taking whichever is smaller between width or height.
+    let canvasSize = ( windowWidth < windowHeight ) ? windowWidth  : windowHeight;
 
-    if (elapsed >= speed) {
-      lastMoveTime = timestamp;
+    // Reduce Canvas size a bit so that it does not touch the edge of the screen.
+    // Make the canvas size value divisible 10.
+    if ( canvasSize % 10 === 0 ) {
+      canvasSize -= 50;
+    } else {
+      canvasSize = canvasSize - 50 - ( canvasSize % 10 );
+    }
 
-      direction = nextDirection;
+    this.canvas.width = canvasSize;
+    this.canvas.height = canvasSize;
+    this.canvas.style.border = '5px solid #000';
+  }
 
-      const head = { ...snake[0] };
+  canvasContext() {
+    this.ctx = this.canvas.getContext( '2d' );
+    this.cw = this.canvas.width;
+    this.ch = this.canvas.height;
+  }
 
-      switch (direction) {
+  drawSnake() {
+    const _this = this;
+    _this.ctx.clearRect( 0, 0, _this.cw, _this.ch );
+
+    _this.snakeSegments.forEach( ( segment ) => {
+      _this.ctx.fillStyle = _this.SNAKE_COLOR;
+      _this.ctx.fillRect(segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE);
+      _this.ctx.strokeStyle = 'black';
+      _this.ctx.lineWidth = 1;
+      _this.ctx.strokeRect(segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE);
+    } )
+  }
+
+  startGameUi() {
+    if ( ! this.startGameDialog ) return;  
+    this.startGameDialog.showModal();
+  }
+
+  restartGameUi() {
+    if ( ! this.restartGameDialog ) return;  
+    this.restartGameDialog.showModal();
+    cancelAnimationFrame( this.raf );
+
+    this.snakeSegments = [
+      { x: 40, y : 0 },
+      { x: 30, y : 0 },
+      { x: 20, y : 0 },
+      { x: 10, y : 0 },
+      { x: 0, y : 0 },
+    ];
+
+    this.direction = 'right';
+    this.nextDirection = 'right';
+  }
+
+  moveSnake( timestamp ) {
+    const _this = this;
+    if ( ! _this.lastMoveTime ) _this.lastMoveTime = timestamp;
+
+    const elapsed = timestamp - _this.lastMoveTime;
+
+    if ( elapsed >= _this.speed ) {
+      _this.lastMoveTime = timestamp;
+
+      _this.direction = _this.nextDirection;
+
+      const head = { ..._this.snakeSegments[0] };
+
+      switch ( _this.direction ) {
         case 'right':
-          head.x += SEGMENT_SIZE;
+          head.x += _this.SEGMENT_SIZE;
           break;
         case 'left':
-          head.x -= SEGMENT_SIZE;
+          head.x -= _this.SEGMENT_SIZE;
           break;
         case 'up':
-          head.y -= SEGMENT_SIZE;
+          head.y -= _this.SEGMENT_SIZE;
           break;
         case 'down':
-          head.y += SEGMENT_SIZE;
+          head.y += _this.SEGMENT_SIZE;
           break;
       }
 
-      if (head.x < 0 || head.x >= CANVAS_WIDTH ||
-        head.y < 0 || head.y >= CANVAS_HEIGHT) {
-        cancelAnimationFrame(raf);
-        alert('Game Over! Hit the wall.');
+      if ( head.x < 0 || head.x >= _this.cw || head.y < 0 || head.y >= _this.ch ) {
+        _this.restartGameUi();
         return;
       }
 
       // Add new segment
-      snake.unshift(head);
+      _this.snakeSegments.unshift( head );
 
       // Remove last segment
-      snake.pop();
+      _this.snakeSegments.pop();
 
-      drawSnake();
+      _this.drawSnake();
     }
 
-    raf = requestAnimationFrame(moveSnake);
+    _this.raf = requestAnimationFrame( _this.moveSnake.bind(_this) );
   }
 
-  function changeDirection(newDirection) {
+  changeDirection( newDirection ) {
     const opposites = {
-      'up': 'down',
-      'down': 'up',
-      'left': 'right',
-      'right': 'left'
+      'up'    : 'down',
+      'down'  : 'up',
+      'left'  : 'right',
+      'right' : 'left'
     };
 
-    if (opposites[newDirection] !== direction) {
-      nextDirection = newDirection;
+    if ( opposites[ newDirection ] !== this.direction ) {
+      this.nextDirection = newDirection;
     }
   }
 
-  drawSnake();
+  start() {
+    this.lastMoveTime = 0;
+    this.raf = requestAnimationFrame( this.moveSnake.bind(this) );
+  }
 
-  window.addEventListener('keydown', e => {
-    switch (e.key) {
-      case 'ArrowUp':
-        changeDirection('up');
-        break;
-      case 'ArrowDown':
-        changeDirection('down');
-        break;
-      case 'ArrowLeft':
-        changeDirection('left');
-        break;
-      case 'ArrowRight':
-        changeDirection('right');
-        break;
-      case ' ':
-        if (raf) {
-          cancelAnimationFrame(raf);
-          raf = null;
-        } else {
-          lastMoveTime = 0;
-          raf = requestAnimationFrame(moveSnake);
-        }
-        break;
+  controls() {
+    const _this = this;
+    const startButton = _this.startGameDialog.querySelector( 'button' );
+    const restartButton = _this.restartGameDialog.querySelector( 'button' );
+
+    window.addEventListener( 'keydown', ( e ) => {
+      switch ( e.key ) {
+        case 'ArrowUp':
+          _this.changeDirection( 'up' );
+          break;
+        case 'ArrowDown':
+          _this.changeDirection( 'down' );
+          break;
+        case 'ArrowLeft':
+          _this.changeDirection( 'left' );
+          break;
+        case 'ArrowRight':
+          _this.changeDirection( 'right' );
+          break;
+      }
+    })
+
+    if ( startButton ) {
+      startButton.addEventListener( 'click', ( e ) => {
+        e.preventDefault();
+        _this.startGameDialog.close();
+        _this.start();
+      } )
     }
 
-    // Start movement if not already moving
-    if (!raf && e.key.startsWith('Arrow')) {
-      lastMoveTime = 0;
-      raf = requestAnimationFrame(moveSnake);
+    if ( restartButton ) {
+      restartButton.addEventListener( 'click', ( e ) => {
+        e.preventDefault();
+        _this.restartGameDialog.close();
+        _this.start();
+      } )
     }
-  })
+  }
+
 }
 
-myApp();
+const game = new SnakeGame();
+game.init();
