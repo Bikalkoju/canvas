@@ -1,3 +1,14 @@
+/**
+ * Snake Game using Canvas
+ * 
+ * TODO:
+ * 1. Add a scoreboard
+ * 2. Add level system to make snake move faster per level
+ * 3. make snake die if it collides with itself
+ * 
+ */
+
+
 class SnakeGame {
   constructor() {
     this.canvas = document.getElementById( 'canvas' );
@@ -7,7 +18,22 @@ class SnakeGame {
     this.startGameDialog = document.getElementById( 'start-ui' );
     this.restartGameDialog = document.getElementById( 'restart-ui' );
 
+    
+  }
+  
+  init() {
+    this.drawCanvas();
+    this.canvasContext();
+    this.variables();
+    this.drawSnake();
+    this.generateFood();
+    this.startGameUi();  
+    this.controls();
+  }
+
+  variables () {
     this.SNAKE_COLOR = '#9726CC';
+    this.FOOD_COLOR = 'red';
     this.SEGMENT_SIZE = 10;
 
     this.snakeSegments = [
@@ -18,19 +44,14 @@ class SnakeGame {
       { x: 0, y : 0 },
     ];
 
+    this.foodPos = this.generateFoodPos();
+    this.oldFoodPos = [];
+
     this.raf = null;
     this.direction = 'right';
     this.nextDirection = 'right';
-    this.speed = 100;
+    this.speed = 200;
     this.lastMoveTime = 0;
-  }
-  
-  init() {
-    this.drawCanvas();
-    this.canvasContext();
-    this.drawSnake();
-    this.startGameUi();  
-    this.controls();
   }
 
   drawCanvas() {
@@ -65,11 +86,11 @@ class SnakeGame {
 
     _this.snakeSegments.forEach( ( segment ) => {
       _this.ctx.fillStyle = _this.SNAKE_COLOR;
-      _this.ctx.fillRect(segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE);
+      _this.ctx.fillRect( segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE );
       _this.ctx.strokeStyle = 'black';
       _this.ctx.lineWidth = 1;
-      _this.ctx.strokeRect(segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE);
-    } )
+      _this.ctx.strokeRect( segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE );
+    } ) 
   }
 
   startGameUi() {
@@ -106,6 +127,7 @@ class SnakeGame {
       _this.direction = _this.nextDirection;
 
       const head = { ..._this.snakeSegments[0] };
+      const tail = { ..._this.snakeSegments[_this.snakeSegments.length - 1] }
 
       switch ( _this.direction ) {
         case 'right':
@@ -122,6 +144,18 @@ class SnakeGame {
           break;
       }
 
+      // Generate new food when food and head collide
+      if( head.x === _this.foodPos[0] && head.y === _this.foodPos[1] ) {
+        _this.oldFoodPos = _this.foodPos;
+        _this.foodPos = _this.generateFoodPos();
+      }
+
+      // Generate new food when food and head collide
+      if( _this.oldFoodPos.length && tail.x === _this.oldFoodPos[0] && tail.y === _this.oldFoodPos[1] ) {
+        _this.oldFoodPos = [];
+        _this.snakeSegments.push( tail );
+      }
+
       if ( head.x < 0 || head.x >= _this.cw || head.y < 0 || head.y >= _this.ch ) {
         _this.restartGameUi();
         return;
@@ -134,6 +168,7 @@ class SnakeGame {
       _this.snakeSegments.pop();
 
       _this.drawSnake();
+      _this.generateFood();
     }
 
     _this.raf = requestAnimationFrame( _this.moveSnake.bind(_this) );
@@ -154,7 +189,7 @@ class SnakeGame {
 
   start() {
     this.lastMoveTime = 0;
-    this.raf = requestAnimationFrame( this.moveSnake.bind(this) );
+    this.raf = requestAnimationFrame( this.moveSnake.bind( this ) );
   }
 
   controls() {
@@ -194,6 +229,38 @@ class SnakeGame {
         _this.start();
       } )
     }
+  }
+
+  generateFood(){
+    this.ctx.fillStyle = this.FOOD_COLOR;
+    this.ctx.fillRect( this.foodPos[0], this.foodPos[1], this.SEGMENT_SIZE, this.SEGMENT_SIZE );
+  }
+
+  generateFoodPos() {
+    let [x,y] = this.generateRandomXYCoordinate();
+    
+    // Regenerate x and y if it overlaps snake position
+    while ( this.snakeSegments.some( ( segment ) => segment.x === x && segment.y === y ) ) {
+      [x, y] = this.generateRandomXYCoordinate();
+    }
+
+    return [x,y];
+  }
+
+  generateRandomXYCoordinate() {
+    // Generate random x and y value from 0 to canvas width and canvas height  minus snake segment size.
+    let x = Math.floor( Math.random() * ( this.cw - this.SEGMENT_SIZE + 1 ) );
+    let y = Math.floor( Math.random() * ( this.ch - this.SEGMENT_SIZE + 1 ) );
+
+    // Make x and y divisible by 10
+    if ( x % 10 !== 0 ) {
+      x -= x % 10;
+    }
+
+    if ( y % 10 !== 0 ) {
+      y -= y % 10;
+    }
+    return [x,y];
   }
 
 }
