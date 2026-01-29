@@ -6,9 +6,27 @@
         <script defer src="index.js"></script>
         <style>
             body{
+                max-height: 100vh;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .game-data{
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                align-items: flex-end;
+                font-size: 18px;
+                line-height: 1;
+                margin-bottom: 10px;
+            }
+
+            #score{
+                font-size: 18px;
+                line-height: 1;
             }
 
             dialog{
@@ -39,6 +57,11 @@
         </style>
     </head>
     <body>
+        <div class="game-data">
+            <div id="score">Score: 0</div>
+            <div id="highscore">HighScore: 0</div>
+            <div if="level">Level: 1</div>
+        </div>
         <canvas id="canvas"></canvas>
         <dialog closedby="closerequest" id="start-ui">
             <div class="content">

@@ -2,9 +2,8 @@
  * Snake Game using Canvas
  * 
  * TODO:
- * 1. Add a scoreboard
- * 2. Add level system to make snake move faster per level
- * 3. make snake die if it collides with itself
+ * 1. Add level system to make snake move faster per level
+ * 2. make snake die if it collides with itself
  * 
  */
 
@@ -17,7 +16,9 @@ class SnakeGame {
 
     this.startGameDialog = document.getElementById( 'start-ui' );
     this.restartGameDialog = document.getElementById( 'restart-ui' );
-
+    this.scoreEl = document.getElementById( 'score' );
+    this.highScoreEl = document.getElementById( 'highscore' );
+    this.levelEl = document.getElementById( 'level' );
     
   }
   
@@ -26,7 +27,6 @@ class SnakeGame {
     this.canvasContext();
     this.variables();
     this.drawSnake();
-    this.generateFood();
     this.startGameUi();  
     this.controls();
   }
@@ -52,6 +52,10 @@ class SnakeGame {
     this.nextDirection = 'right';
     this.speed = 200;
     this.lastMoveTime = 0;
+
+    this.score = 0;
+    this.highScore = 0;
+    this.level = 1;
   }
 
   drawCanvas() {
@@ -91,6 +95,9 @@ class SnakeGame {
       _this.ctx.lineWidth = 1;
       _this.ctx.strokeRect( segment.x, segment.y, _this.SEGMENT_SIZE, _this.SEGMENT_SIZE );
     } ) 
+    
+    _this.generateFood();
+    _this.setScore( _this.score );
   }
 
   startGameUi() {
@@ -113,6 +120,14 @@ class SnakeGame {
 
     this.direction = 'right';
     this.nextDirection = 'right';
+
+    // update highscore
+    if ( this.highScore < this.score ) {
+      this.highScore = this.score;
+    }
+
+    this.score = 0;
+    this.setHighScore( this.highScore );
   }
 
   moveSnake( timestamp ) {
@@ -148,6 +163,7 @@ class SnakeGame {
       if( head.x === _this.foodPos[0] && head.y === _this.foodPos[1] ) {
         _this.oldFoodPos = _this.foodPos;
         _this.foodPos = _this.generateFoodPos();
+        _this.score++;
       }
 
       // Generate new food when food and head collide
@@ -168,7 +184,6 @@ class SnakeGame {
       _this.snakeSegments.pop();
 
       _this.drawSnake();
-      _this.generateFood();
     }
 
     _this.raf = requestAnimationFrame( _this.moveSnake.bind(_this) );
@@ -261,6 +276,18 @@ class SnakeGame {
       y -= y % 10;
     }
     return [x,y];
+  }
+
+  setScore( score ) {
+    this.scoreEl.textContent = `Score: ${score}`;
+  }
+
+  setHighScore( highscore ) {
+    this.highScoreEl.textContent = `High Score: ${highscore}`;
+  }
+
+  setLevel( level ) {
+    this.levelEl.textContent = `Level: ${level}`;
   }
 
 }
