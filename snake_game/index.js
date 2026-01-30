@@ -2,8 +2,7 @@
  * Snake Game using Canvas
  * 
  * TODO:
- * 1. Add level system to make snake move faster per level
- * 2. make snake die if it collides with itself
+ * 1. make snake die if it collides with itself
  * 
  */
 
@@ -26,6 +25,7 @@ class SnakeGame {
     this.drawCanvas();
     this.canvasContext();
     this.variables();
+    this.getLevelThreshold();
     this.drawSnake();
     this.startGameUi();  
     this.controls();
@@ -120,6 +120,8 @@ class SnakeGame {
 
     this.direction = 'right';
     this.nextDirection = 'right';
+    this.level = 1;
+    this.speed = 200;
 
     // update highscore
     if ( this.highScore < this.score ) {
@@ -166,7 +168,7 @@ class SnakeGame {
         _this.score++;
       }
 
-      // Generate new food when food and head collide
+      // Add a new segment after the food is eaten
       if( _this.oldFoodPos.length && tail.x === _this.oldFoodPos[0] && tail.y === _this.oldFoodPos[1] ) {
         _this.oldFoodPos = [];
         _this.snakeSegments.push( tail );
@@ -176,6 +178,8 @@ class SnakeGame {
         _this.restartGameUi();
         return;
       }
+
+      _this.updateLevel(); 
 
       // Add new segment
       _this.snakeSegments.unshift( head );
@@ -288,6 +292,24 @@ class SnakeGame {
 
   setLevel( level ) {
     this.levelEl.textContent = `Level: ${level}`;
+  }
+
+  getLevelThreshold() {
+    const horizontalGridSegments = this.cw / this.SEGMENT_SIZE;
+    const totalGridSegments = horizontalGridSegments * horizontalGridSegments; // Since our canvas is square, squaring the horizontalGridSegments will give total grid segment.
+
+    // Total number of grid segment is how much the score can be obtained ( Ignoring initial snake segments )
+    // Let's divide our game into 20 levels based on the total obtainable score, and that will be our level threshold
+
+    this.levelThreshold =  Math.floor( totalGridSegments / 20 );
+  }
+  
+  updateLevel() {
+    if ( this.score >= this.level * this.levelThreshold ){
+      this.level++;
+      this.speed -= 8;
+      this.setLevel( this.level );
+    }
   }
 
 }
