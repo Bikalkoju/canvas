@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Mini Game</title>
+    <script src="index.js" defer></script>
+    <style>
+        *,*:before,*:after{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body{
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        .hangman-wrapper{
+            height: 50vh;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+    </style>
+</head>
+<body>
+    <div class="hangman-wrapper">
+        <canvas id="hangman"></canvas>
+    </div>
+    <div class="words_input"></div>
+</body>
+</html>

@@ -3,6 +3,7 @@
  * 
  * TODO:
  * 1. make snake die if it collides with itself
+ * 2. Add Gameover if all segments are filled
  * 
  */
 
